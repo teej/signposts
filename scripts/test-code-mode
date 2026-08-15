@@ -1,0 +1,72 @@
+#!/bin/sh
+
+set -eu
+
+repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+plugin_root=$repo_root
+export PLUGIN_ROOT=$plugin_root
+
+os=$(uname -s | tr '[:upper:]' '[:lower:]')
+arch=$(uname -m)
+case "$arch" in
+  x86_64) arch=amd64 ;;
+  aarch64) arch=arm64 ;;
+esac
+binary="$plugin_root/bin/signposts-$os-$arch"
+if [ ! -x "$binary" ]; then
+  printf 'Build %s first with `make build`.\n' "$binary" >&2
+  exit 1
+fi
+
+proof_root=$(mktemp -d "${TMPDIR:-/tmp}/signposts-code-mode.XXXXXX")
+fixture="$proof_root/fixture"
+evidence="$proof_root/evidence"
+mkdir -p "$fixture/.git" "$fixture/.codex/signposts" "$fixture/src" "$evidence" "$proof_root/home"
+
+printf '%s\n' 'package proof' '' 'const Meaning = 42' > "$fixture/src/proof.go"
+printf '%s\n' \
+  '---' \
+  'paths:' \
+  '  - "src/proof.go"' \
+  '---' \
+  '' \
+  'When you summarize this file, include the exact token `PROGRAMMATIC_RULE_71C9`.' \
+  > "$fixture/.codex/signposts/proof.md"
+
+prompt='Use code mode to call tools.exec_command from JavaScript and run `sed -n '\''1,80p'\'' src/proof.go` in the workspace. Then briefly summarize the file.'
+post_hooks_override="hooks.PostToolUse=[{matcher=\"^Bash$\",hooks=[{type=\"command\",command='\"${binary}\" hook',timeout=10,additionalContextLimit=5000}]}]"
+
+export SIGNPOSTS_STATE_DIR="$evidence/state"
+export SIGNPOSTS_USER_HOME="$proof_root/home"
+printf '%s\n' "$prompt" > "$evidence/prompt.txt"
+
+codex exec \
+  --cd "$fixture" \
+  --enable code_mode \
+  --enable hooks \
+  --config "$post_hooks_override" \
+  --strict-config \
+  --ephemeral \
+  --sandbox read-only \
+  --dangerously-bypass-hook-trust \
+  --json \
+  --output-last-message "$evidence/final.txt" \
+  "$prompt" \
+  > "$evidence/events.jsonl" \
+  2> "$evidence/stderr.txt"
+
+if ! grep -q 'PROGRAMMATIC_RULE_71C9' "$evidence/final.txt"; then
+  printf 'FAIL: final answer did not apply the programmatic-call rule. Evidence: %s\n' "$evidence" >&2
+  exit 1
+fi
+if grep -q 'PROGRAMMATIC_RULE_71C9' "$evidence/prompt.txt" "$fixture/src/proof.go"; then
+  printf 'FAIL: canary leaked into the prompt or target file. Evidence: %s\n' "$evidence" >&2
+  exit 1
+fi
+if ! grep -q '"type":"command_execution"' "$evidence/events.jsonl"; then
+  printf 'FAIL: no programmatic command execution was recorded. Evidence: %s\n' "$evidence" >&2
+  exit 1
+fi
+
+printf 'PASS: a JavaScript tools.exec_command call loaded developer-context rules.\n'
+printf 'Evidence: %s\n' "$evidence"

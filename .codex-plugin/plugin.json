@@ -1,0 +1,30 @@
+{
+  "name": "signposts",
+  "version": "0.1.0",
+  "description": "Load path-scoped repository rules when Codex reads matching files.",
+  "author": {
+    "name": "TJ Murphy",
+    "url": "https://github.com/teej"
+  },
+  "homepage": "https://github.com/teej/signposts",
+  "repository": "https://github.com/teej/signposts",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "rules",
+    "context"
+  ],
+  "interface": {
+    "displayName": "Signposts",
+    "shortDescription": "Load rules when matching files are read.",
+    "longDescription": "Adds lazy, path-scoped repository rules to Codex while remaining compatible with Claude Code rule files.",
+    "developerName": "TJ Murphy",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Read"
+    ],
+    "defaultPrompt": [
+      "Explain which repository rules apply to this path."
+    ]
+  }
+}

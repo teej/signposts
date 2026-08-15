@@ -1,0 +1,20 @@
+#!/bin/sh
+
+set -eu
+
+plugin_root=${PLUGIN_ROOT:-$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)}
+os=$(uname -s | tr '[:upper:]' '[:lower:]')
+arch=$(uname -m)
+
+case "$arch" in
+  x86_64) arch=amd64 ;;
+  aarch64) arch=arm64 ;;
+esac
+
+binary="$plugin_root/bin/signposts-$os-$arch"
+if [ ! -x "$binary" ]; then
+  printf 'signposts: unsupported platform or missing binary: %s-%s\n' "$os" "$arch" >&2
+  exit 1
+fi
+
+exec "$binary" "$@"
