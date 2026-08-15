@@ -1,6 +1,6 @@
 {
   "name": "signposts",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Load path-scoped repository rules when Codex reads matching files.",
   "author": {
     "name": "TJ Murphy",
@@ -25,6 +25,8 @@
     ],
     "defaultPrompt": [
       "Explain which repository rules apply to this path."
-    ]
+    ],
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png"
   }
 }
