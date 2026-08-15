@@ -1,0 +1,20 @@
+{
+  "name": "signposts",
+  "interface": {
+    "displayName": "Signposts"
+  },
+  "plugins": [
+    {
+      "name": "signposts",
+      "source": {
+        "source": "local",
+        "path": "./plugins/signposts"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

@@ -4,6 +4,19 @@ Signposts adds lazy, path-scoped repository rules to Codex.
 
 Rules load when Codex reads a matching file. This keeps specialized guidance out of the initial context while making its activation deterministic. Existing Claude Code rules work without modification.
 
+## Installation
+
+Add the Signposts marketplace from GitHub, then install the plugin:
+
+```sh
+codex plugin marketplace add teej/signposts
+codex plugin add signposts@signposts
+```
+
+Start a new Codex task after installation. The plugin ships prebuilt binaries for macOS, Linux, and Windows; Go is not required to use it.
+
+To pin the marketplace checkout to a release or commit, add `--ref <tag-or-sha>` to the first command.
+
 ## Rule locations
 
 Signposts scans these directories recursively:
@@ -68,13 +81,13 @@ go vet ./...
 Inspect the rules that apply to a path:
 
 ```sh
-scripts/run-signposts check client/src/sync/SyncAction.ts
+plugins/signposts/scripts/run-signposts check client/src/sync/SyncAction.ts
 ```
 
 Run the opt-in Codex code-mode proof after building the current-platform binary:
 
 ```sh
-scripts/test-code-mode
+plugins/signposts/scripts/test-code-mode
 ```
 
 The proof starts an ephemeral Codex session, makes it read a matching file through a JavaScript `tools.exec_command` call, and verifies that the resulting answer follows a rule whose canary was absent from the prompt and target file.

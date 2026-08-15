@@ -28,7 +28,7 @@ go.work.sum
 .env
 
 # The plugin ships prebuilt binaries.
-!bin/signposts-windows-*.exe
+!plugins/signposts/bin/signposts-windows-*.exe
 
 # Editor/IDE
 # .idea/
